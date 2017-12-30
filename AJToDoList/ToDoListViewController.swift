@@ -9,11 +9,15 @@
 import UIKit
 
 class ToDoListViewController: UITableViewController {
+    
+    var item = ""
 
-    let itemArray = ["Call Him", "Call Bob", "BootCamp Meeting"]
+    var itemArray = ["Call Him", "Call Bob", "BootCamp Meeting"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
         // Do any additional setup after loading the view, typically from a nib.
    
     tableView.separatorStyle = .none
@@ -62,6 +66,46 @@ class ToDoListViewController: UITableViewController {
         
         
     }
+    
+    // MARK -  ADD New Items Section
+    
+    @IBAction func addBtnPressed(_ sender: UIBarButtonItem) {
+        
+        var textField = UITextField()
+        
+        
+        let alert = UIAlertController(title: "Add New Item", message: "",
+                                      preferredStyle: .alert)
+       
+        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+            
+            // Things that happends when user clicks on the add item
+            print("Success")
+           
+            self.itemArray.append(textField.text!)
+            
+            self.tableView.reloadData()
+            
+            
+            
+        }
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Add task"
+            
+            textField = alertTextField
+         
+            
+           
+            
+        }
+        
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+
+        
+        
+    }
+    
     
 
 
