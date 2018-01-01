@@ -8,11 +8,18 @@
 
 import UIKit
 import CoreData
+import RealmSwift
 
 class CategoryViewController: UITableViewController {
     
-    var categories = [Category]()
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let realm = try! Realm()
+    
+    
+    var categories : Results<Category>?
+    
+    //result is a container provided by realm
+    
+    //let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     
     
@@ -45,17 +52,17 @@ class CategoryViewController: UITableViewController {
             
             
             
-            let newCat = Category(context: self.context)
+            let newCat = Category()
             
             newCat.name = textField.text!
    
             
-            self.categories.append(newCat)
+          //  self.categories.append(newCat)
             
             //self.defaults.set(self.itemArray, forKey: "ToDoListArray")
             
             
-            self.saveCategories()
+            self.saveCategories(category: newCat)
             
             
             
@@ -79,13 +86,15 @@ class CategoryViewController: UITableViewController {
     
     
     // Writing Data to the Database
-    func saveCategories()
+    func saveCategories(category : Category)
     {
         //let encoder = PropertyListEncoder()
         
         
         do{
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
             
         }
         catch
@@ -101,16 +110,22 @@ class CategoryViewController: UITableViewController {
     // Reading Data from the Database
     func loadCategories()
     {
-        let request : NSFetchRequest<Category> = Category.fetchRequest()
         
-        do{
-            categories = try context.fetch(request)
-        }
-        catch
-        {
-            print ("Error Fetching the Data \(error)")
-        }
+       // let categories = realm.objects(Category.self)
         
+        categories = realm.objects(Category.self)
+        
+        
+//        let request : NSFetchRequest<Category> = Category.fetchRequest()
+//
+//        do{
+//            categories = try context.fetch(request)
+//        }
+//        catch
+//        {
+//            print ("Error Fetching the Data \(error)")
+//        }
+//
         
         tableView.reloadData()
         
@@ -127,28 +142,21 @@ class CategoryViewController: UITableViewController {
     
     //MARK: - TableView DataSource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            return categories.count
+        
+        // the below lines is equal to say if the category.count wasn't 0 then return its value otherwise
+        // return 1. The syntax is called Nil Coalescing Operator
+        return categories?.count ?? 1
         }
         
     
-    
-    
-    
-    
-    
-    
-    
-    
-
-        
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-        let category = categories[indexPath.row]
+    
         
-        cell.textLabel?.text = category.name
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Category Added Yet"
         
         
     
@@ -172,7 +180,7 @@ class CategoryViewController: UITableViewController {
         
        if let indexPath = tableView.indexPathForSelectedRow
        {
-        destinationVC.selectedCategory = categories[indexPath.row]
+        destinationVC.selectedCategory = categories?[indexPath.row]
         
         }
         
