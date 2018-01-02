@@ -9,8 +9,10 @@
 import UIKit
 import CoreData
 import RealmSwift
+import ChameleonFramework
 
-class ToDoListViewController: UITableViewController{
+
+class ToDoListViewController: SwipeTableViewController{
     
     let realm = try! Realm()
     
@@ -24,7 +26,7 @@ class ToDoListViewController: UITableViewController{
     }
     
     
-     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+     //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
      // let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
    // let defaults = UserDefaults.standard
@@ -32,16 +34,13 @@ class ToDoListViewController: UITableViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        if let preferredColor = UIColor(hexString: (selectedCategory?.color)!)
+        {
+        navigationController?.navigationBar.tintColor = preferredColor
+        }
         
         // setting up UI Searchbar delegate
-        
-        
-        
-        
-       
-        
-
-        
+   
 //        if let items = defaults.array(forKey: "ToDoListArray") as? [Item]
 //        {
 //            itemArray = items
@@ -73,28 +72,46 @@ class ToDoListViewController: UITableViewController{
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
-        if let item = toDoItems?[indexPath.row]
-        {
-            cell.textLabel?.text = item.title
-            
-            // Ternary Operator ==>
-            // Value = condition ? valueIfTrue : valueIfFalse
-            
-            cell.accessoryType = item.done  ? .checkmark : .none
-            
-        }
-        else
-        {
-            cell.textLabel?.text = "No Item Added Yet"
-        }
+        cell.textLabel?.text = toDoItems?[indexPath.row].title ?? "No Category Added Yet"
+        
+       // let categoryColor = UIColor(HexString: selectedCategory?.color)
+        
+        let color =  UIColor(hexString: (selectedCategory?.color)!)?.darken(byPercentage: ((CGFloat(indexPath.row)/CGFloat((toDoItems?.count)!))))
+        cell.backgroundColor = color
+        
+        cell.textLabel?.textColor = ContrastColorOf(color!, returnFlat: true)
+        // cell.delegate = self
         
         
-    
         return cell
         
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+//
+//        if let item = toDoItems?[indexPath.row]
+//        {
+//            cell.textLabel?.text = item.title
+//
+//            // Ternary Operator ==>
+//            // Value = condition ? valueIfTrue : valueIfFalse
+//
+//            cell.accessoryType = item.done  ? .checkmark : .none
+//
+//        }
+//        else
+//        {
+//            cell.textLabel?.text = "No Item Added Yet"
+//        }
+//
+        
+
     }
+    
+    
+
+    
+    
     
     
     
@@ -102,21 +119,24 @@ class ToDoListViewController: UITableViewController{
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         
+       // updateModel(at: indexPath)
         // updating items using realm
-        if let item = toDoItems?[indexPath.row]
-        {
-            do{
-            try realm.write {
-               // realm.delete(item) this function will delete items
-                item.done = !item.done
-            }
-            }
-            catch
-            {
-                print("Error Data Saving Status, \(error)")
-            }
-        }
+//        if let item = toDoItems?[indexPath.row]
+//        {
+//            do{
+//            try realm.write {
+//               // realm.delete(item) this function will delete items
+//                item.done = !item.done
+//            }
+//            }
+//            catch
+//            {
+//                print("Error Data Saving Status, \(error)")
+//            }
+//        }
         
+        
+//
         tableView.reloadData()
         
     
@@ -126,6 +146,28 @@ class ToDoListViewController: UITableViewController{
         
         
     }
+    
+    
+    override func updateModel(at indexPath: IndexPath) {
+        
+        
+        
+        if let cat = toDoItems?[indexPath.row]
+        {
+            do{
+                try self.realm.write {
+                    self.realm.delete(cat)
+                    
+                }
+            }
+            catch
+            {
+                print("Error Data Saving Status, \(error)")
+            }
+        }
+        // tableView.reloadData()
+    }
+    
     
     // MARK -  ADD New Items Section
     
